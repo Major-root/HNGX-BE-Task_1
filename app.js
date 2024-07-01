@@ -13,6 +13,7 @@ const apiKey = process.env.GEOLOCATION_API_KEY;
 
 app.use("/api/hello", async (req, res, next) => {
   let visitorName = req.query.visitor_name;
+  const clientIP = req.ip === "::1" ? "102.90.45.226" : req.ip;
 
   if (
     (visitorName.startsWith('"') && visitorName.endsWith('"')) ||
@@ -20,28 +21,32 @@ app.use("/api/hello", async (req, res, next) => {
   ) {
     visitorName = visitorName.slice(1, -1);
   }
-  let responseIP, responseGeo;
+  let responseGeo;
   try {
-    responseIP = await axios("https://get.geojs.io/v1/ip/geo.json");
-    responseGeo = await axios(
-      `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${responseIP.data.latitude},${responseIP.data.longitude}`
+    responseGeo = await axios.get(
+      `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${clientIP}`
     );
+    console.log(responseGeo.data);
   } catch (err) {
-    res.status(500).json({
+    // console.log(err);
+    return res.status(500).json({
       message: "Failed to fetch data",
     });
   }
 
+  const location = responseGeo.data.location.region;
+  const temp_c = responseGeo.data.current.temp_c;
+
   res.status(200).json({
-    client_ip: responseIP.data.ip,
-    location: responseIP.data.city,
-    greeting: `Hello, ${visitorName}!, the temperature is ${responseGeo.data.current.temp_c} degrees Celcius in ${responseIP.data.city}`,
+    client_ip: clientIP,
+    location,
+    greeting: `Hello, ${visitorName}!, the temperature is ${temp_c} degrees Celsius in ${location}`,
   });
 });
 
 app.all("*", (req, res, next) => {
-  console.log("yeah man");
-  console.log(`${req.originalUrl} not found in my server`);
+  // console.log("yeah man");
+  // console.log(`${req.originalUrl} not found in my server`);
   res.status(400).json({
     message: `${req.originalUrl} not found in my server`,
   });
