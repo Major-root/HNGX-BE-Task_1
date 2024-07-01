@@ -20,10 +20,19 @@ app.get("/", (req, res, next) => {
   });
 });
 
-app.use("/api/hello", async (req, res, next) => {
+app.get("/api/hello", async (req, res, next) => {
   console.log("api/hello");
   let visitorName = req.query.visitor_name;
-  const clientIP = req.ip === "::1" ? "102.90.45.226" : req.ip;
+  // const clientIP = req.ip === "::1" ? "102.90.45.226" : req.ip;
+  if (!visitorName) {
+    return res.status(400).json({
+      message: "visitor_name query parameter is required",
+    });
+  }
+
+  // Get client IP address
+  const clientIP =
+    req.headers["x-forwarded-for"] || req.connection.remoteAddress || req.ip;
 
   if (
     (visitorName.startsWith('"') && visitorName.endsWith('"')) ||
@@ -38,7 +47,7 @@ app.use("/api/hello", async (req, res, next) => {
     );
     console.log(responseGeo.data);
   } catch (err) {
-    // console.log(err);
+    console.log(err);
     return res.status(500).json({
       message: "Failed to fetch data",
     });
