@@ -1,17 +1,27 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const axios = require("axios");
+const cors = require("cors");
 
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors());
 
 dotenv.config({ path: "./config.env" });
 const port = process.env.PORT || 3000;
 const apiKey = process.env.GEOLOCATION_API_KEY;
 
+app.get("/", (req, res, next) => {
+  console.log("root route");
+  res.status(200).json({
+    message: "Hello welcome",
+  });
+});
+
 app.use("/api/hello", async (req, res, next) => {
+  console.log("api/hello");
   let visitorName = req.query.visitor_name;
   const clientIP = req.ip === "::1" ? "102.90.45.226" : req.ip;
 
