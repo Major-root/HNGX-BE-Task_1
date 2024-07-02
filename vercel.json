@@ -6,9 +6,6 @@
       "use": "@vercel/node"
     }
   ],
-  "env": {
-    "GEOLOCATION_API_KEY": "b257d6680da0460784e51417240107"
-  },
   "routes": [
     {
       "src": "/(.*)",
